@@ -419,92 +419,111 @@ gormDB, err := gorm.Open(mysql.New(mysql.Config{
 
 ### 6. Golang错误处理与⽇志管理
 ***
-1. `errors.New`是能让开发员写出简单的error类型的信息
-2. `fmt.Errorf`是能够使用`%w`来显示出所收到的`err`代码，并且能够自行加入需要的信息，和`fmt.Printf`类似。
-3. `errors.Wrap`是以`fmt.Errorf`的基础上多加一个额外的功能，显示出的错误会包括追踪出现错的的文档。
+1. `errors.New`是能让开发员写出单个简单的错误类型的信息。
+2. `fmt.Errorf`是能够使用`%w`来显示出所收到的`err`错误类代码，并且能够自行加入需要的信息，和`fmt.Printf`类似。
+3. `errors.Wrap`是让开发员能够把一个错误配合一个信息结合一起发送的工具，并且显示堆栈信息，有需要时能够用`errors.Unwrap`取出错误信息
 
 Go代码
 ```go
 package main
 
 import (
-	"fmt"
-	"github.com/natefinch/lumberjack"
-	"github.com/sirupsen/logrus"
-	"os"
-	"time"
+  "errors"
+  "fmt"
+  "github.com/natefinch/lumberjack"
+  pkgErr "github.com/pkg/errors"
+  "github.com/sirupsen/logrus"
+  "os"
+  "time"
+)
+
+var (
+  ErrorDB    = errors.New("DB connection error")
+  ErrorTwo   = errors.New("error two")
+  ErrorThree = errors.New("error three")
 )
 
 func main() {
-	log := logrus.New()
+  log := logrus.New()
+  // Set up file-based log rotation with JSON format
+  fileLogger := &lumberjack.Logger{
+    Filename:   "service.log", // Log file name
+    MaxSize:    100,           // Max size in MB before rotating
+    MaxBackups: 30,            // Max number of old log files to keep
+    MaxAge:     28,            // Max number of days to retain old log files
+    Compress:   true,          // Compress old log files
+  }
 
-	// Set up file-based log rotation with JSON format
-	fileLogger := &lumberjack.Logger{
-		Filename:   "service.log", // Log file name
-		MaxSize:    100,           // Max size in MB before rotating
-		MaxBackups: 30,            // Max number of old log files to keep
-		MaxAge:     28,            // Max number of days to retain old log files
-		Compress:   true,          // Compress old log files
-	}
+  // Create a separate logger for file logging with JSON format
+  fileLog := logrus.New()
+  fileLog.SetFormatter(&logrus.JSONFormatter{})
+  fileLog.SetOutput(fileLogger)
 
-	// Create a separate logger for file logging with JSON format
-	fileLog := logrus.New()
-	fileLog.SetFormatter(&logrus.JSONFormatter{})
-	fileLog.SetOutput(fileLogger)
+  // Create a separate logger for console logging with color
+  consoleLog := logrus.New()
+  consoleLog.SetFormatter(&logrus.TextFormatter{
+    ForceColors:     true, // Forces colorization on the output
+    FullTimestamp:   true, // Adds full timestamps
+    TimestampFormat: fmt.Sprintf("%s", time.Now().UTC().Format("2006-01-02 15:04:05")),
+  })
+  consoleLog.SetOutput(os.Stdout)
 
-	// Create a separate logger for console logging with color
-	consoleLog := logrus.New()
-	consoleLog.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     true, // Forces colorization on the output
-		FullTimestamp:   true, // Adds full timestamps
-		TimestampFormat: fmt.Sprintf("%s", time.Now().UTC().Format("2006-01-02 15:04:05")),
-	})
-	consoleLog.SetOutput(os.Stdout)
+  // Set log level (Info and above)
+  log.SetLevel(logrus.InfoLevel)
 
-	// Set log level (Info and above)
-	log.SetLevel(logrus.InfoLevel)
+  // Log to console and file
+  consoleLog.Info("Service started")
+  fileLog.Info("Service started")
 
-	// Log to console and file
-	consoleLog.Info("Service started")
-	fileLog.Info("Service started")
+  consoleLog.Warn("TEST")
+  fileLog.Warn("TEST")
 
-	consoleLog.Warn("TEST")
-	fileLog.Warn("TEST")
+  // Log with contextual information
+  consoleLog.WithFields(logrus.Fields{
+    "service_name": "UserService",
+    "request_id":   "12345",
+  }).Info("Handling request")
 
-	// Log with contextual information
-	consoleLog.WithFields(logrus.Fields{
-		"service_name": "UserService",
-		"request_id":   "12345",
-	}).Info("Handling request")
+  fileLog.WithFields(logrus.Fields{
+    "service_name": "UserService",
+    "request_id":   "12345",
+  }).Info("Handling request")
 
-	fileLog.WithFields(logrus.Fields{
-		"service_name": "UserService",
-		"request_id":   "12345",
-	}).Info("Handling request")
+  // Simulate an error
+  err := someFunction(ErrorTwo)
+  if err != nil {
+    // Use pkgErr.WithStack to add stack trace information
+    wrappedErr := pkgErr.Wrap(ErrorDB, "something wrong in DB")
+    // Log the error with stack information
+    consoleLog.WithFields(logrus.Fields{
+      "error": wrappedErr,
+    }).Error("Failed to process request")
 
-	// Simulate an error
-	consoleLog.WithFields(logrus.Fields{
-		"error": "Database connection failed",
-	}).Error("Failed to process request")
+    fileLog.WithFields(logrus.Fields{
+      "error": wrappedErr,
+    }).Error("Failed to process request")
+  }
 
-	fileLog.WithFields(logrus.Fields{
-		"error": "Database connection failed",
-	}).Error("Failed to process request")
 }
+
+func someFunction(err error) error {
+  return fmt.Errorf("error : %w", err)
+}
+
 ```
 终端显示的logger
 ```
-INFO[80840-08-08 212:28:120] Service started
-WARN[80840-08-08 212:28:120] TEST
-INFO[80840-08-08 212:28:120] Handling request                              request_id=12345 service_name=UserService
-ERRO[80840-08-08 212:28:120] Failed to process request                     error="Database connection failed"
+INFO[90933-09-09 08:02:44] Service started
+WARN[90933-09-09 08:02:44] TEST
+INFO[90933-09-09 08:02:44] Handling request                              request_id=12345 service_name=UserService
+ERRO[90933-09-09 08:02:44] Failed to process request                     error="something wrong in DB: DB connection error"
 ```
 以JSON格式记录错误
 ```
-{"level":"info","msg":"Service started","time":"2025-02-08T22:12:40+08:00"}
-{"level":"warning","msg":"TEST","time":"2025-02-08T22:12:40+08:00"}
-{"level":"info","msg":"Handling request","request_id":"12345","service_name":"UserService","time":"2025-02-08T22:12:40+08:00"}
-{"error":"Database connection failed","level":"error","msg":"Failed to process request","time":"2025-02-08T22:12:40+08:00"}
+{"level":"info","msg":"Service started","time":"2025-02-09T16:10:26+08:00"}
+{"level":"warning","msg":"TEST","time":"2025-02-09T16:10:26+08:00"}
+{"level":"info","msg":"Handling request","request_id":"12345","service_name":"UserService","time":"2025-02-09T16:10:26+08:00"}
+{"error":"something wrong in DB: DB connection error","level":"error","msg":"Failed to process request","time":"2025-02-09T16:10:26+08:00"}
 ```
 
 ### 7. API并发安全问题

@@ -1,16 +1,23 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/natefinch/lumberjack"
+	pkgErr "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"os"
 	"time"
 )
 
+var (
+	ErrorDB    = errors.New("DB connection error")
+	ErrorTwo   = errors.New("error two")
+	ErrorThree = errors.New("error three")
+)
+
 func main() {
 	log := logrus.New()
-
 	// Set up file-based log rotation with JSON format
 	fileLogger := &lumberjack.Logger{
 		Filename:   "service.log", // Log file name
@@ -56,11 +63,22 @@ func main() {
 	}).Info("Handling request")
 
 	// Simulate an error
-	consoleLog.WithFields(logrus.Fields{
-		"error": "Database connection failed",
-	}).Error("Failed to process request")
+	err := someFunction(ErrorTwo)
+	if err != nil {
+		// Use pkgErr.WithStack to add stack trace information
+		wrappedErr := pkgErr.Wrap(ErrorDB, "something wrong in DB")
+		// Log the error with stack information
+		consoleLog.WithFields(logrus.Fields{
+			"error": wrappedErr,
+		}).Error("Failed to process request")
 
-	fileLog.WithFields(logrus.Fields{
-		"error": "Database connection failed",
-	}).Error("Failed to process request")
+		fileLog.WithFields(logrus.Fields{
+			"error": wrappedErr,
+		}).Error("Failed to process request")
+	}
+
+}
+
+func someFunction(err error) error {
+	return fmt.Errorf("error : %w", err)
 }
