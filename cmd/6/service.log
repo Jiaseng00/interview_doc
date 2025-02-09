@@ -1,0 +1,12 @@
+{"level":"info","msg":"Service started","time":"2025-02-08T22:12:40+08:00"}
+{"level":"warning","msg":"TEST","time":"2025-02-08T22:12:40+08:00"}
+{"level":"info","msg":"Handling request","request_id":"12345","service_name":"UserService","time":"2025-02-08T22:12:40+08:00"}
+{"error":"Database connection failed","level":"error","msg":"Failed to process request","time":"2025-02-08T22:12:40+08:00"}
+{"level":"info","msg":"Service started","time":"2025-02-09T01:22:47+08:00"}
+{"level":"warning","msg":"TEST","time":"2025-02-09T01:22:47+08:00"}
+{"level":"info","msg":"Handling request","request_id":"12345","service_name":"UserService","time":"2025-02-09T01:22:47+08:00"}
+{"error":"Database connection failed","level":"error","msg":"Failed to process request","time":"2025-02-09T01:22:47+08:00"}
+{"level":"info","msg":"Service started","time":"2025-02-09T01:26:53+08:00"}
+{"level":"warning","msg":"TEST","time":"2025-02-09T01:26:53+08:00"}
+{"level":"info","msg":"Handling request","request_id":"12345","service_name":"UserService","time":"2025-02-09T01:26:53+08:00"}
+{"error":"Database connection failed","level":"error","msg":"Failed to process request","time":"2025-02-09T01:26:53+08:00"}
