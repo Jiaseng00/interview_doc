@@ -9,7 +9,7 @@
 + 原理：Channel是类型化的，可以传递特定类型的数据。具有阻塞特性，发送和接收数据会阻塞直到对方准备好。
 缓冲Channel可以避免阻塞.
 ### Go 代码
-```
+```go
 func main() {
 	taskQueue := make(chan int, 3)
 	var wg sync.WaitGroup
@@ -74,7 +74,7 @@ go get -u gorm.io/gorm
 go get -u gorm.io/driver/sqlite
 ```
 Go 代码
-```
+```go
 package main
 
 import (
@@ -122,7 +122,7 @@ func main() {
 [GIN-debug] DELETE /:id                      --> main.DeleteOrder (3 handlers)
 ```
 订单API路由结构
-```
+```go
 package main
 
 import (
@@ -151,7 +151,7 @@ func main() {
 }
 ```
 JSON响应助手，简化回复前端的逻辑代码
-```
+```go
 // JSON 响应助手
 func JSONResponse(c *gin.Context, status int, message string, data interface{}) {
 	c.JSON(http.StatusOK, gin.H{
@@ -169,7 +169,7 @@ func ErrorResponse(c *gin.Context, status int, message string) {
 }
 ```
 创建订单的API代码
-```
+```go
 // 模拟数据库里Order的构造
 type Order struct {
 	Id         int `gorm:"id" json:"id"`
@@ -214,7 +214,7 @@ payload进行重新签名。如果请求发来的签名和服务器重新生成�
 进行下个程序行动。为了JWT的有效性，开发员通常会设置有效期，当JWT无效，用户必须再次
 登录来获得新的JWT。
 
-```
+```go
 package main
 
 import (
@@ -315,7 +315,7 @@ API_KEY=APIKEYEXAMPLE
 PORT=1234
 ```
 **读取.env文件中的函数**
-```
+```go
 package main
 
 import (
@@ -342,7 +342,7 @@ func main() {
   + 此例子使用`logrus`和`lumberjack`来进行日志管理
 
 日志文件轮转和保留的设定
-```
+```go
 fileLogger := &lumberjack.Logger{
     Filename:   "service.log", // 日志文件的路径和名称
     MaxSize:    100,           // 文件最大大小，单位 MB，超过该大小会进行轮转
@@ -371,7 +371,7 @@ ERRO[70717-07+08 23:711:27] Failed to process request                     error=
 + 处理简单的错误，可以直接使用`fmt.Println(error)`或者`log.Println(error)`
 显示错误。但为了良好的扩充性，可以使用**错误包装**技巧来处理错误，这会让开发员更加容
 易的了解问题的所在.例如：
-```
+```go
 var ErrNotFound = errors.New("resource not found")
 
 func someFunction() error {
@@ -388,7 +388,7 @@ func main() {
 数据库连接
 + 可以使用ORM框架(如`GORM`)和调用`.env`文件里的数据库配置来简化链接数据库的操作，
 并且使用连接池优化与数据库的链接
-```
+```go
 import (
   "database/sql"
   "gorm.io/driver/mysql"
@@ -424,7 +424,7 @@ gormDB, err := gorm.Open(mysql.New(mysql.Config{
 3. `errors.Wrap`是以`fmt.Errorf`的基础上多加一个额外的功能，显示出的错误会包括追踪出现错的的文档。
 
 Go代码
-```
+```go
 package main
 
 import (
@@ -533,7 +533,7 @@ ERRO[80840-08-08 212:28:120] Failed to process request                     error
 3. 悲观锁
 + 在进行任何动作前，使用`for update`锁来确保数据交接进行期间，只有此线程正在进行，并且其他的线程必须等待此锁打开后，再次获得此锁才能进行。
 
-```
+```go
 package main
 
 import (
@@ -644,7 +644,7 @@ func updateBalanceWithOptimisticLock(db *gorm.DB, userID int, amount float64, ac
 为了排查性能问题：
 1. 可以在服务器上开启另一个不同的端口，专门拿来做性能测试，这样做就不需要担心会太大的影响到主程序端口的性能
 。这个API回应时间是15秒左右
-```
+```go
 package main
 
 import (
@@ -712,7 +712,7 @@ ROUTINE ======================== Good_Net/cmd/8/pkg.ProcessData in D:\Good_Net\c
          .          .     45:}
 ```
 5.  使用`Benchmark`工具来写出函数测试文件`pkg_test.go`。
-```
+```go
 package pkg
 
 import (
@@ -770,7 +770,7 @@ BenchmarkProcessData-12            16731             72945 ns/op               0
 PASS
 ```
 从以上结果，可以发现瓶颈出现在哪个函数。<br>
-```
+```go
 package pkg
 
 import (
@@ -825,7 +825,7 @@ BenchmarkCalculation-12               96          12152069 ns/op           56241
 BenchmarkProcessData-12            15462             85503 ns/op               0 B/op          0 allocs/op
 PASS
 ```
-```
+```go
 package pkg
 
 import (
@@ -899,15 +899,7 @@ func ProcessData(x int) int {
 ***
 为了让接收的JSON转换为Go结构体，必须使用`Go struct`，并且定义一样的JSON Key
 `json:"Key"`来确保正确的格式转换。
-```
-type Client struct {
-	Id        int       `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-}
-```
-```
+```go
 package main
 
 import (
