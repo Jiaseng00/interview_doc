@@ -42,7 +42,7 @@ func worker(id int, taskQueue chan int, wg *sync.WaitGroup) {
 }
 ```
 显示
-```
+```bash
 任务1加入队列
 任务2加入队列
 任务3加入队列
@@ -115,7 +115,7 @@ func main() {
 ***
 ##### 订单管理API
 服务器运行后,显示订单CRUD Api
-```
+```bash
 [GIN-debug] GET    /                         --> main.GetOrder (3 handlers)
 [GIN-debug] POST   /                         --> main.CreateOrder (3 handlers)
 [GIN-debug] PUT    /:id                      --> main.UpdateOrder (3 handlers)
@@ -200,7 +200,7 @@ func CreateOrder(c *gin.Context) {
 JWT的基本构造是由`header.payload.signature`链接和加密组成而生成的一个token.
 + **签名**是把header和payload经过Base64Url编码后，加上一个开发员独立收藏的密钥包在一起，
 然后使用其中一个算法来进行签名，最后连接在JWT`signature`的部分。
-```
+```bash
 // 签名
 HMACSHA256(
   base64UrlEncode(header) + "." +
@@ -361,7 +361,7 @@ service.log里的记录
 {"error":"Database connection failed","level":"error","msg":"Failed to process request","time":"2025-02-07T23:23:10+08:00"}
 ```
 在开发阶段，推荐把日志输出在控制台并使用颜色代码，以便阅读
-```
+```bash
 INFO[70717-07+08 23:711:27] Service started                              
 WARN[70717-07+08 23:711:27] TEST
 INFO[70717-07+08 23:711:27] Handling request                              request_id=12345 service_name=UserService
@@ -512,7 +512,7 @@ func someFunction(err error) error {
 
 ```
 终端显示的logger
-```
+```bash
 INFO[90933-09-09 08:02:44] Service started
 WARN[90933-09-09 08:02:44] TEST
 INFO[90933-09-09 08:02:44] Handling request                              request_id=12345 service_name=UserService
